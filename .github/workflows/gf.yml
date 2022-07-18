@@ -20,6 +20,11 @@ on:
     - enhance/**
     - fix/**
 
+# 同分支短时间多次提交，停止上次ci
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
+  cancel-in-progress: true
+
 env:
   TZ: "Asia/Shanghai"
 
