@@ -58,6 +58,7 @@ func main() {
 		cmd.Tpl,
 		cmd.Init,
 		cmd.Pack,
+		cmd.Parse,
 		cmd.Build,
 		cmd.Docker,
 		cmd.Install,

@@ -42,13 +42,3 @@ func LcFirst(s string) string {
 func UcWords(str string) string {
 	return strings.Title(str)
 }
-
-// IsLetterLower tests whether the given byte b is in lower case.
-func IsLetterLower(b byte) bool {
-	return utils.IsLetterLower(b)
-}
-
-// IsLetterUpper tests whether the given byte b is in upper case.
-func IsLetterUpper(b byte) bool {
-	return utils.IsLetterUpper(b)
-}

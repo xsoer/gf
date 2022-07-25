@@ -441,3 +441,16 @@ func Test_SubStrFromREx(t *testing.T) {
 		t.Assert(gstr.SubStrFromREx("我爱GoFrameGood", `Frame`), `Good`)
 	})
 }
+
+func Test_IsExported(t *testing.T) {
+	gtest.C(t, func(t *gtest.T) {
+		t.Assert(gstr.IsExported(``), false)
+		t.Assert(gstr.IsExported(`1`), false)
+		t.Assert(gstr.IsExported(`a`), false)
+		t.Assert(gstr.IsExported(`A`), true)
+		t.Assert(gstr.IsExported(`Z`), true)
+		t.Assert(gstr.IsExported(`!`), false)
+		t.Assert(gstr.IsExported(`name`), false)
+		t.Assert(gstr.IsExported(`Name`), true)
+	})
+}
