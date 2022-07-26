@@ -130,6 +130,10 @@ func (p *Parser) makeTypeId(pkgPath, typeName string) string {
 
 func (p *Parser) saveParsedType(typeId string, parsedType *ParsedType) {
 	if parsedType != nil {
+		if !gstr.IsExported(parsedType.Name) {
+			delete(p.types, typeId)
+			return
+		}
 		pkgPath := p.types[typeId].PkgPath
 		*p.types[typeId] = *parsedType
 		parsedTypeId := p.makeTypeId(parsedType.PkgPath, parsedType.Name)
