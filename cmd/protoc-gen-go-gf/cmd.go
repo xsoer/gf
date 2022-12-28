@@ -3,13 +3,14 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"net/http"
+	"strings"
+	"text/template"
+
 	"google.golang.org/genproto/googleapis/api/annotations"
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
-	"net/http"
-	"strings"
-	"text/template"
 )
 
 var (
@@ -25,7 +26,7 @@ var (
 )
 
 func process(genFile *protogen.Plugin, file *protogen.File) {
-	gen := genFile.NewGeneratedFile(file.GeneratedFilenamePrefix+".ghttp.go", file.GoImportPath)
+	gen := genFile.NewGeneratedFile(file.GeneratedFilenamePrefix+".gf.go", file.GoImportPath)
 	processCopyrightAndVersion(gen, file, genFile)
 }
 
@@ -54,7 +55,7 @@ func processCopyrightAndVersion(gen *protogen.GeneratedFile, file *protogen.File
 func processContent(gen *protogen.GeneratedFile, file *protogen.File) {
 	for _, svc := range file.Services {
 		processSvcStruct(gen, svc)
-		serviceHttpInterfaces := []map[string]interface{}{}
+		serviceHttpInterfaces := make([]map[string]interface{}, 0)
 		for _, method := range svc.Methods {
 			if method == nil || method.Desc.IsStreamingServer() || method.Desc.IsStreamingClient() {
 				continue
