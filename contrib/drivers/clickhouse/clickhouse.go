@@ -94,14 +94,14 @@ func (d *Driver) Open(config *gdb.ConfigNode) (db *sql.DB, err error) {
 	} else {
 		if config.Pass != "" {
 			source = fmt.Sprintf(
-				"clickhouse://%s:%s@%s:%s/%s?charset=%s&debug=%t",
+				"clickhouse://%s:%s@%s:%s/%s?debug=%t",
 				config.User, url.PathEscape(config.Pass),
-				config.Host, config.Port, config.Name, config.Charset, config.Debug,
+				config.Host, config.Port, config.Name, config.Debug,
 			)
 		} else {
 			source = fmt.Sprintf(
-				"clickhouse://%s@%s:%s/%s?charset=%s&debug=%t",
-				config.User, config.Host, config.Port, config.Name, config.Charset, config.Debug,
+				"clickhouse://%s@%s:%s/%s?debug=%t",
+				config.User, config.Host, config.Port, config.Name, config.Debug,
 			)
 		}
 		if config.Extra != "" {
@@ -173,8 +173,12 @@ func (d *Driver) TableFields(
 			isNull = true
 			fieldType = fieldsResult[1]
 		}
+		position := m["position"].Int()
+		if result[0]["position"].Int() != 0 {
+			position -= 1
+		}
 		fields[m["name"].String()] = &gdb.TableField{
-			Index:   m["position"].Int(),
+			Index:   position,
 			Name:    m["name"].String(),
 			Default: m["default_expression"].Val(),
 			Comment: m["comment"].String(),
