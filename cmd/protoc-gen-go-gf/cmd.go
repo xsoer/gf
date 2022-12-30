@@ -33,44 +33,27 @@ func processCopyrightAndVersion(gen *protogen.GeneratedFile, file *protogen.File
 }
 
 func processContent(gen *protogen.GeneratedFile, file *protogen.File) {
-	for _, svc := range file.Services {
-		for _, method := range svc.Methods {
-			if method == nil || method.Desc.IsStreamingServer() || method.Desc.IsStreamingClient() {
-				continue
-			}
-			processMethod(gen, method, svc)
-		}
+	for _, message := range file.Messages {
+		var buffer = bytes.NewBuffer(nil)
+		processMessage(gen, buffer, message)
+		gen.P(buffer.String())
 	}
 }
 
-func processMethod(g *protogen.GeneratedFile, method *protogen.Method, svc *protogen.Service) map[string]interface{} {
-	processMessage(g, method)
-	return map[string]interface{}{
-		"method_name": string(method.Desc.Name()),
-		"in_name":     string(method.Input.Desc.Name()),
-		"out_name":    string(method.Output.Desc.Name()),
+func processMessage(gen *protogen.GeneratedFile, buffer *bytes.Buffer, message *protogen.Message) {
+	methodMessageTplBuffer := bytes.NewBuffer(nil)
+	err := methodMessageTpl.Execute(methodMessageTplBuffer, map[string]interface{}{
+		"message_name": string(message.Desc.Name()),
+		"fields":       processMessageFields(gen, message),
+	})
+	if err != nil {
+		info("gf-gen-go-http: Execute template error: %s\n", err.Error())
+		panic(err.Error())
 	}
+	buffer.WriteString(methodMessageTplBuffer.String())
 }
 
-func processMessage(gen *protogen.GeneratedFile, method *protogen.Method) {
-	processMessageFunc := func(message *protogen.Message, needGenGMeta bool) {
-		methodMessageTplBuffer := bytes.NewBuffer(nil)
-		err := methodMessageTpl.Execute(methodMessageTplBuffer, map[string]interface{}{
-			"message_name": string(message.Desc.Name()),
-			"fields":       processMessageFields(message, gen),
-		})
-		if err != nil {
-			info("gf-gen-go-http: Execute template error: %s\n", err.Error())
-			panic(err.Error())
-		}
-		gen.P(methodMessageTplBuffer.String())
-		gen.P()
-	}
-	processMessageFunc(method.Input, true)
-	processMessageFunc(method.Output, false)
-}
-
-func processMessageFields(message *protogen.Message, gen *protogen.GeneratedFile) []string {
+func processMessageFields(gen *protogen.GeneratedFile, message *protogen.Message) []string {
 	var (
 		tagContent       string
 		fieldDefinitions = make([]string, 0)
@@ -82,7 +65,7 @@ func processMessageFields(message *protogen.Message, gen *protogen.GeneratedFile
 		))
 	}
 	for _, field := range message.Fields {
-		fieldDefinition := fmt.Sprintf("%s %s", field.GoName, processFieldType(field, gen))
+		fieldDefinition := fmt.Sprintf("%s %s", field.GoName, processFieldType(gen, field))
 		tagContent = processComment(field.Comments)
 		if tagContent != "" {
 			fieldDefinition += " " + tagContent
@@ -92,7 +75,7 @@ func processMessageFields(message *protogen.Message, gen *protogen.GeneratedFile
 	return fieldDefinitions
 }
 
-func processFieldType(field *protogen.Field, gen *protogen.GeneratedFile) string {
+func processFieldType(gen *protogen.GeneratedFile, field *protogen.Field) string {
 	if field.Desc.IsWeak() {
 		return "struct{}"
 	}
@@ -112,8 +95,8 @@ func processFieldType(field *protogen.Field, gen *protogen.GeneratedFile) string
 		return "[]" + goType
 	}
 	if field.Desc.IsMap() {
-		keyType := processFieldType(field.Message.Fields[0], gen)
-		valType := processFieldType(field.Message.Fields[1], gen)
+		keyType := processFieldType(gen, field.Message.Fields[0])
+		valType := processFieldType(gen, field.Message.Fields[1])
 		return fmt.Sprintf("map[%v]%v", keyType, valType)
 	}
 	return goType
