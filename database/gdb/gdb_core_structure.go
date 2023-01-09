@@ -218,6 +218,19 @@ func (c *Core) CheckLocalTypeForField(ctx context.Context, fieldType string, fie
 		"jsonb":
 		return LocalTypeJsonb, nil
 
+	case
+		"int32":
+		return LocalTypeInt32, nil
+	case
+		"int64":
+		return LocalTypeInt64, nil
+	case
+		"uint32":
+		return LocalTypeUint32, nil
+	case
+		"uint64":
+		return LocalTypeUint64, nil
+
 	default:
 		// Auto-detect field type, using key match.
 		switch {

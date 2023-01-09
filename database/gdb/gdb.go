@@ -344,6 +344,8 @@ const (
 	LocalTypeDatetime    = "datetime"
 	LocalTypeInt         = "int"
 	LocalTypeUint        = "uint"
+	LocalTypeInt32       = "int32"
+	LocalTypeUint32      = "uint32"
 	LocalTypeInt64       = "int64"
 	LocalTypeUint64      = "uint64"
 	LocalTypeIntSlice    = "[]int"
